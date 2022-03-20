@@ -25,7 +25,7 @@ String controleMsg[10];
 String mac;
 String gateway = "b8:27:eb:8e:94:f2";
 time_t timestamp;
-String receivedLoRa[5];
+String receivedLoRa[5]={"0","0","0","0","0"};
 unsigned long lastMillis = 0, period = 20000;
 static String messages[] = {"abcd", "efgh", "mnop", "wxyz", "0123", "1234", "7645",
                             "sfas", "5426"};
@@ -48,25 +48,6 @@ void setRTC(time_t timeStamp){
 
 void getRTC(){
    timestamp = time(NULL);
-  }
-
-
-
-void enviarLoRa(unsigned long timeStamp,String projName,String msg){
-  uint8_t data[RH_RF95_MAX_MESSAGE_LEN];
-  memset(data, '\0', sizeof(data));
-  mac.toLowerCase();
-  msg = mac + "!" + gateway + "!" + projName + "!" + String(timeStamp) + "!" + msg;
-  for (int i = 0; i < msg.length(); i++)
-  {
-      data[i] = (uint8_t)msg[i];
-  }
-  rf95.send(data, sizeof(data));
-  rf95.waitPacketSent();
-  Serial.println("Enviou a mensagem: ");
-  Serial.println(msg);
-  // controleGravarLoRa(timeStamp, msg);
-  
   }
 
 void controleRetirarLoRa(int _timeStamp){
@@ -99,6 +80,23 @@ void controleGravarLoRa(unsigned long _timeStamp, String msg){
     }  
   }
 
+void enviarLoRa(unsigned long timeStamp,String projName,String msg){
+  uint8_t data[RH_RF95_MAX_MESSAGE_LEN];
+  memset(data, '\0', sizeof(data));
+  mac.toLowerCase();
+  msg = mac + "!" + gateway + "!" + projName + "!" + String(timeStamp) + "!" + msg;
+  for (int i = 0; i < msg.length(); i++)
+  {
+      data[i] = (uint8_t)msg[i];
+  }
+  rf95.send(data, sizeof(data));
+  rf95.waitPacketSent();
+  Serial.println("Enviou a mensagem: ");
+  Serial.println(msg);
+  controleGravarLoRa(timeStamp, msg);
+  
+  }
+
 void checarControle(){
   for(;;){
     getRTC();
@@ -112,6 +110,7 @@ void checarControle(){
     
   }
 }
+
 
 
 void recvDataFactory(char *buf, RecvData &data)
@@ -129,7 +128,7 @@ void recv()
 {       
         if (rf95.available())
         {
-            Serial.println("Recebeu uma mensagem");
+            //Serial.println("Recebeu uma mensagem");
             // Should be a message for us now
             uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
             uint8_t len = sizeof(buf);
@@ -138,7 +137,7 @@ void recv()
             struct RecvData data;
             if (rf95.recv(buf, &len))
             {
-                Serial.println((char *)buf);
+                //Serial.println((char *)buf);
                 recvDataFactory((char *)buf, data);
                 if(data.to.equals(mac)){
                   receivedLoRa[0] = data.from; 
@@ -147,20 +146,20 @@ void recv()
                   receivedLoRa[3] = String(data.timestamp);
                   receivedLoRa[4] = data.recvMsg;
                   
-                  Serial.println("Msg e para mim");
                   if(data.projName == "time"){
                      setRTC(data.timestamp);
+                     receivedLoRa[0] = "0";
                   }
-                    /*if(data.projName == "confirm"){
-                      controleRetirarLoRa(data.timeStamp);
-                        }*/
+                    if(data.projName == "confirm"){
+                      controleRetirarLoRa(data.timestamp);
+                      receivedLoRa[0] = "0";
+                        }
                     }else{
                       Serial.println("Msg nao e para mim");
+                      receivedLoRa[0] = "0";
                       }      
                 }   
-        }else{
-          receivedLoRa[0] = "0";
-          }
+        }
     }
 
 void loraConfig(const float& frequencia) {
