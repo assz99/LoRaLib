@@ -19,7 +19,7 @@ void loop() {
     Serial.println("Tipo de mensagem: " + receivedLoRa[2]);
     Serial.println("Mensagem: " + receivedLoRa[4]);
     receivedLoRa[0] = "0";
-    sendConfirmation(receivedLoRa[0], receivedLoRa[3]);
+    sendConfirmation(receivedLoRa[3]);
     }
   if (millis() - lastMillis >= period ){
     int num = random(9);

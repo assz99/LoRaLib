@@ -93,9 +93,9 @@ void sendLoRa(String msg){
   Serial.println(msg);
   }
 
-void sendConfirmation(String x, String y){
+void sendConfirmation(String y){
   mac.toLowerCase();
-  String msg1 = mac + "!" + x + "!" + "confirm" + "!" + y + "!ok";
+  String msg1 = mac + "!" + gateway + "!" + "confirm" + "!" + y + "!OK";
   delay(400);
   Serial.println("Enviando Confirmacao");
   sendLoRa(msg1);
