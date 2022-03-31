@@ -27,4 +27,5 @@ void loop() {
     enviarLoRa(timestamp, "arCond", messages[num]);
     lastMillis = millis();
     }
+    unQueueLoRa();
 }

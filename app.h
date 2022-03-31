@@ -16,6 +16,9 @@
 #include <RH_RF95.h>
 #include <RHSoftwareSPI.h>
 #include "Oled_api.h"
+#include <ArduinoQueue.h>
+
+ArduinoQueue<String> filaLoRa(10);
 timeval tv;
 RHSoftwareSPI spi;
 RH_RF95 rf95(18, 26);
@@ -98,13 +101,21 @@ void sendConfirmation(String y){
   String msg1 = mac + "!" + gateway + "!" + "confirm" + "!" + y + "!OK";
   delay(400);
   Serial.println("Enviando Confirmacao");
-  sendLoRa(msg1);
+  filaLoRa.enqueue(msg1);
+  }
+
+void unQueueLoRa(){
+  while(!filaLoRa.isEmpty()){
+    Serial.println("Tirando da fila");
+    String msg1 = filaLoRa.dequeue();
+    sendLoRa(msg1);
+    }
   }
 
 void enviarLoRa(unsigned long timeStamp,String projName,String msg){
   mac.toLowerCase();
   msg = mac + "!" + gateway + "!" + projName + "!" + String(timeStamp) + "!" + msg;
-  sendLoRa(msg);
+  filaLoRa.enqueue(msg);
   controleGravarLoRa(timeStamp, msg);
   }
 
